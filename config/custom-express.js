@@ -11,7 +11,7 @@ module.exports = function() {
 
     app.use(expressValidator())
 
-    consign().include('controllers').into(app)
+    consign().include('controllers').then('persistencia').into(app)
 
     return app
 }
