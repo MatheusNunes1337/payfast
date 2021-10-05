@@ -27,12 +27,17 @@ module.exports = function(app) {
       pagamento.data = new Date();
   
       pagamentoDao.salva(pagamento, function(exception, result){
+
+        if(exception) {
+            res.status(500).send(exception)
+        }
+        
         console.log('pagamento criado: ' + result);
 
         res.location('/pagamentos/pagamento/' + result.insertId);
         pagamento.id = result.insertId;
 
-        res.json(pagamento);
+        res.status(201).json(pagamento);
       });
     });
 
