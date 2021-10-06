@@ -67,10 +67,27 @@ module.exports = function(app) {
         if (err){
           return res.status(500).send(err);
         }
-        console.log('pagamento criado');
         res.status(204).json(pagamento);
     });
 
+  });
+
+  app.delete('/pagamentos/pagamento/:id', function(req, res){
+    let pagamento = {};
+    const id = req.params.id;
+
+    pagamento.id = id;
+    pagamento.status = 'CANCELADO';
+
+    const connection = app.persistencia.connectionFactory();
+    const pagamentoDao = new app.persistencia.PagamentoDao(connection);
+
+    pagamentoDao.atualiza(pagamento, function(err){
+        if (err){
+          return res.status(500).send(err);
+        }
+        res.status(204).send(pagamento);
+    });
   });
 
 }
