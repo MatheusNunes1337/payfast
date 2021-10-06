@@ -1,6 +1,17 @@
+const PagamentoDao = require("../persistencia/PagamentoDao");
+
 module.exports = function(app) {
     app.get('/pagamentos', function(req, res) {
-      res.send('rota get de pagamentos')
+
+      const connection = app.persistencia.connectionFactory();
+      const pagamentoDao = new app.persistencia.PagamentoDao(connection);
+
+      pagamentoDao.lista(function(err, pagamentos){
+          if(err) {
+            return res.status(400).send(err)
+          }
+          res.status(200).json(pagamentos)
+      })
     })
 
     app.post("/pagamentos/pagamento",function(req, res) {
