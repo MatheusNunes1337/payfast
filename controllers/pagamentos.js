@@ -46,9 +46,20 @@ module.exports = function(app) {
         console.log('pagamento criado: ' + result);
 
         res.location('/pagamentos/pagamento/' + result.insertId);
-        pagamento.id = result.insertId;
 
-        res.status(201).json(pagamento);
+        pagamento.id = result.insertId;
+        pagamento.valor = result.valor
+
+        const uri = 'http://localhost:3000'
+
+        const hateoas = {"id": pagamento.id ,"status":"CRIADO","valor": pagamento.valor,
+        "links":[
+          {"rel":" confirmar", uri: uri + "/pagamentos/pagamento/" + pagamento.id,"method":"PUT"},
+          {"rel":"cancelar", uri: uri + "/pagamentos/pagamento/" + pagamento.id,"method":"DELETE"}
+        ]
+      }
+
+        res.status(201).json(hateoas);
       });
     });
 
