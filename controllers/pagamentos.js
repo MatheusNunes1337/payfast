@@ -1,6 +1,6 @@
 module.exports = function(app) {
     app.get('/pagamentos', function(req, res) {
-        res.send('rota get de pagamentos')
+      res.send('rota get de pagamentos')
     })
 
     app.post("/pagamentos/pagamento",function(req, res) {
@@ -40,5 +40,26 @@ module.exports = function(app) {
         res.status(201).json(pagamento);
       });
     });
+
+    app.put('/pagamentos/pagamento/:id', function(req, res){
+
+    let pagamento = {};
+    const id = req.params.id;
+
+    pagamento.id = id;
+    pagamento.status = 'CONFIRMADO';
+
+    const connection = app.persistencia.connectionFactory();
+    const pagamentoDao = new app.persistencia.PagamentoDao(connection);
+
+    pagamentoDao.atualiza(pagamento, (err) => {
+        if (err){
+          return res.status(500).send(err);
+        }
+        console.log('pagamento criado');
+        res.status(204).json(pagamento);
+    });
+
+  });
 
 }
