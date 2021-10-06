@@ -15,13 +15,13 @@ module.exports = function(app) {
     })
 
     app.post("/pagamentos/pagamento",function(req, res) {
-      var pagamento = req.body;
+      const pagamento = req.body.pagamento;
 
-      req.assert("forma_de_pagamento", "Forma de pagamento é obrigatória.").notEmpty();
-      req.assert("valor", "Valor é obrigatório e deve ser um decimal.").notEmpty().isFloat();
-      req.assert("moeda", "Moeda é obrigatória e deve ter 3 caracteres").notEmpty().len(3,3);
+      req.assert("pagamento.forma_de_pagamento", "Forma de pagamento é obrigatória.").notEmpty();
+      req.assert("pagamento.valor", "Valor é obrigatório e deve ser um decimal.").notEmpty().isFloat();
+      req.assert("pagamento.moeda", "Moeda é obrigatória e deve ter 3 caracteres").notEmpty().len(3,3);
 
-      var errors = req.validationErrors();
+      const errors = req.validationErrors();
 
       if (errors){
           console.log("Erros de validação encontrados");
@@ -31,8 +31,8 @@ module.exports = function(app) {
 
       console.log('processando pagamento...');
   
-      var connection = app.persistencia.connectionFactory();
-      var pagamentoDao = new app.persistencia.PagamentoDao(connection);
+      const connection = app.persistencia.connectionFactory();
+      const pagamentoDao = new app.persistencia.PagamentoDao(connection);
 
       pagamento.status = "CRIADO";
       pagamento.data = new Date();
@@ -45,21 +45,51 @@ module.exports = function(app) {
         
         console.log('pagamento criado: ' + result);
 
-        res.location('/pagamentos/pagamento/' + result.insertId);
+        if(pagamento.forma_de_pagamento == 'cartao') {
+            const cartao = req.body.cartao
 
-        pagamento.id = result.insertId;
-        pagamento.valor = result.valor
+            const clienteCartoes = new app.servicos.clienteCartoes()
+            clienteCartoes.autoriza(cartao, function(exception, request, response, retorno) {
+                if(exception) {
+                  return res.status(400).send(exception)
+                }
 
-        const uri = 'http://localhost:3000'
+                res.location('/pagamentos/pagamento/' + result.insertId);
 
-        const hateoas = {"id": pagamento.id ,"status":"CRIADO","valor": pagamento.valor,
-        "links":[
-          {"rel":" confirmar", uri: uri + "/pagamentos/pagamento/" + pagamento.id,"method":"PUT"},
-          {"rel":"cancelar", uri: uri + "/pagamentos/pagamento/" + pagamento.id,"method":"DELETE"}
-        ]
-      }
+                pagamento.id = result.insertId;
+                pagamento.valor = result.valor
+        
+                const uri = 'http://localhost:3000'
+        
+                const hateoas = {"id": pagamento.id ,"status":"CRIADO", cartao: retorno, "valor": pagamento.valor,
+                "links":[
+                    {"rel":" confirmar", uri: uri + "/pagamentos/pagamento/" + pagamento.id,"method":"PUT"},
+                    {"rel":"cancelar", uri: uri + "/pagamentos/pagamento/" + pagamento.id,"method":"DELETE"}
+                  ]
+                }
+  
+              res.status(201).json(hateoas);
 
-        res.status(201).json(hateoas);
+          })
+        } else {
+
+          res.location('/pagamentos/pagamento/' + result.insertId);
+
+          pagamento.id = result.insertId;
+          pagamento.valor = result.valor
+  
+          const uri = 'http://localhost:3000'
+  
+          const hateoas = {"id": pagamento.id ,"status":"CRIADO","valor": pagamento.valor,
+          "links":[
+            {"rel":" confirmar", uri: uri + "/pagamentos/pagamento/" + pagamento.id,"method":"PUT"},
+            {"rel":"cancelar", uri: uri + "/pagamentos/pagamento/" + pagamento.id,"method":"DELETE"}
+          ]
+        }
+  
+          res.status(201).json(hateoas);
+        }
+
       });
     });
 
