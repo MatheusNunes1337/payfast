@@ -1,6 +1,11 @@
 const winston = require('winston')
+const fs = require('fs')
 
-const logger = new winston.Logger({
+if (!fs.existsSync("logs")){
+    fs.mkdirSync("logs");
+}
+
+const logger = new winston.createLogger({
     transports: [
       new winston.transports.File({
         level: "info", //nivel do log
