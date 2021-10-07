@@ -14,6 +14,23 @@ module.exports = function(app) {
       })
     })
 
+    app.get('/pagamentos/pagamento/:id', function(req, res){
+       const id = req.params.id;
+       console.log('consultando pagamento de id: ' + id);
+   
+       const connection = app.persistencia.connectionFactory();
+       const pagamentoDao = new app.persistencia.PagamentoDao(connection);
+   
+       pagamentoDao.buscaPorId(id, function(err, pagamento){
+         if(err){
+           console.log('erro ao consultar no banco: ' + err);
+           return res.status(500).send(err);
+         }
+         return res.status(200).json(pagamento);
+       });
+     });
+  
+
     app.post("/pagamentos/pagamento",function(req, res) {
       const pagamento = req.body.pagamento;
 
