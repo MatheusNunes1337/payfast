@@ -17,7 +17,8 @@
     "express-validator": "^5.3.0",
     "mysql": "^2.18.1",
     "restify": "^8.6.0",
-    "restify-clients": "^3.1.0"
+    "restify-clients": "^3.1.0",
+    "soap": "^0.16.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.13"
